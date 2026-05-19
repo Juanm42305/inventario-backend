@@ -2,30 +2,34 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const app = express();
+// 1. IMPORTACIONES ÚNICAS DE RUTAS
+const rutasAutenticacion = require('./src/routes/authRoutes');
+const rutasProductos = require('./src/routes/productRoutes');
+const rutasPayments = require('./src/routes/paymentRoutes');
 
+const app = express();
 const PORT = process.env.PORT || 10000;
 
 /** =========================================================================
- *  MIDDLEWARES GLOBALES (Validaciones de seguridad y formato básicas)
- *  ========================================================================= */
-
-// CORS permite que tu frontend en Vercel pueda hacerle preguntas a tu backend en Render
+ * MIDDLEWARES GLOBALES
+ * ========================================================================= */
 app.use(cors());
-
-// Permite que tu servidor entienda cuando el frontend le mande datos en formato JSON (ej. formularios)
 app.use(express.json());
 
 /** =========================================================================
- *  RUTAS DE PRUEBA Y DIAGNÓSTICO
- *  ========================================================================= */
+ * ENLAZAR RUTAS A LA API (Usando nombres totalmente distintos)
+ * ========================================================================= */
+app.use('/api/auth', rutasAutenticacion);
+app.use('/api/products', rutasProductos);
+app.use('/api/payments', rutasPayments);
 
-// Ruta de bienvenida básica
+/** =========================================================================
+ * RUTAS DE PRUEBA Y DIAGNÓSTICO
+ * ========================================================================= */
 app.get('/', (req, res) => {
   res.send('¡Bienvenido a la API del Sistema de Inventario de Partes Informáticas!');
 });
 
-// Ruta "Health" (Salud del servidor): Render la usa para verificar que tu app no se ha caído
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK', 
@@ -33,19 +37,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// IMPORTAR RUTAS
-const authRoutes = require('./src/routes/authRoutes');
-
-// MIDDLEWARES GLOBALES
-app.use(cors());
-app.use(express.json());
-
-// ENLAZAR RUTAS A LA API
-app.use('/api/auth', authRoutes); // <-- Añade esta línea
-
 /** =========================================================================
- *  MIDDLEWARE DE CONTROL DE ERRORES (Evita que el servidor se caiga)
- *  ========================================================================= */
+ * MIDDLEWARE DE CONTROL DE ERRORES Global
+ * ========================================================================= */
 app.use((err, req, res, next) => {
   console.error('❌ Error interno detectado:', err.message);
   res.status(500).json({ 
@@ -55,8 +49,8 @@ app.use((err, req, res, next) => {
 });
 
 /** =========================================================================
- *  ARRANQUE DEL SERVIDOR
- *  ========================================================================= */
+ * ARRANQUE DEL SERVIDOR
+ * ========================================================================= */
 app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`📡 Servidor encendido en el puerto: ${PORT}`);
