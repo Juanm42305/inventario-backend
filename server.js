@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 10000;
  * CONFIGURACIÓN DE CORS RESTRINGIDA (Seguridad total para Producción)
  * ========================================================================= */
 const allowedOrigins = [
-  'http://localhost:5173', // Tu entorno de desarrollo local
+  'https://inventario-fronted.vercel.app', // Tu entorno de desarrollo local
   process.env.FRONTEND_URL // La URL privada de tu despliegue en Vercel
 ];
 
