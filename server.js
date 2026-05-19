@@ -11,13 +11,32 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 /** =========================================================================
- * MIDDLEWARES GLOBALES
+ * CONFIGURACIÓN DE CORS RESTRINGIDA (Seguridad total para Producción)
  * ========================================================================= */
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:5173', // Tu entorno de desarrollo local
+  process.env.FRONTEND_URL // La URL privada de tu despliegue en Vercel
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Si la petición no tiene origen (como herramientas del servidor o llamadas internas)
+    // o si el origen está en nuestra lista permitida, dejamos pasar la petición.
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Acceso denegado por políticas de seguridad (CORS).'));
+    }
+  },
+  credentials: true, // Permite el intercambio seguro de tokens y cookies si fuera necesario
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 /** =========================================================================
- * ENLAZAR RUTAS A LA API (Usando nombres totalmente distintos)
+ * ENLAZAR RUTAS A LA API
  * ========================================================================= */
 app.use('/api/auth', rutasAutenticacion);
 app.use('/api/products', rutasProductos);
