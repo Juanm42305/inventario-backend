@@ -11,24 +11,35 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 /** =========================================================================
- * CONFIGURACIÓN DE CORS RESTRINGIDA (Seguridad total para Producción)
+ * CONFIGURACIÓN DE CORS FLEXIBLE Y SEGURA (Desarrollo y Producción)
  * ========================================================================= */
 const allowedOrigins = [
-  'https://inventario-fronted.vercel.app', // Tu entorno de desarrollo local
-  process.env.FRONTEND_URL // La URL privada de tu despliegue en Vercel
+  'http://localhost:5173',          // Tu entorno de desarrollo local con Vite
+  'http://localhost:3000',          // Puerto alternativo local por si acaso
+  'https://inventario-frontend.vercel.app' // URL de producción corregida (con 'nd')
 ];
+
+// Si tienes configurado FRONTEND_URL en las variables de Render, la agregamos dinámicamente
+if (process.env.FRONTEND_URL) {
+  // Limpiamos barras inclinadas al final que puedan romper la validación de strings
+  const cleanUrl = process.env.FRONTEND_URL.replace(/\/$/, "");
+  if (!allowedOrigins.includes(cleanUrl)) {
+    allowedOrigins.push(cleanUrl);
+  }
+}
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Si la petición no tiene origen (como herramientas del servidor o llamadas internas)
-    // o si el origen está en nuestra lista permitida, dejamos pasar la petición.
+    // Permitir peticiones sin origen (como Thunder Client, Postman o backend-to-backend)
+    // O si el origen de la web que consulta está dentro de la lista permitida
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`🚫 Origen rechazado por CORS: ${origin}`);
       callback(new Error('Acceso denegado por políticas de seguridad (CORS).'));
     }
   },
-  credentials: true, // Permite el intercambio seguro de tokens y cookies si fuera necesario
+  credentials: true, // Permite el intercambio seguro de tokens, headers y cookies
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
